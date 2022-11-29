@@ -10,8 +10,12 @@ class GameStats:
         self.reset_stats()
         # Start ALien Invasion in an active state:
         self.game_active = False
-        # High score should never be reset.
-        self.high_score = 0
+
+        # High score should is stored, is order to not be changed,
+        # unless there is a new high score.
+        filename = '../high_score_memory.json'
+        with open(filename) as f:
+            self.high_score = json.load(f)
 
         self.get_stored_high_score()
 
