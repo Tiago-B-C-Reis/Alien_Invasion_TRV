@@ -14,7 +14,7 @@ class Settings:
         self.bullets_allowed = 5
 
         # This setting allow to choose from different backgrounds
-        self.bg_choice = 2
+        self.bg_choice = 1
 
         # Limit of ships that can be used before losing:
         self.ship_limit = 3

@@ -9,6 +9,7 @@ from ship import Ship
 from bullet import Bullet
 from alien import Alien
 from button import Button
+from bg_button import BgButton
 
 
 class AlienInvasion:
@@ -20,7 +21,7 @@ class AlienInvasion:
         pygame.init()
         self.settings = Settings()
 
-        fullscreen = False
+        fullscreen = True
         if fullscreen:
             # Set scream size settings:
             self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
@@ -48,6 +49,8 @@ class AlienInvasion:
 
         # Make the play button
         self.play_button = Button(self, "Play")
+        # Make the background choice button:
+        self.bg_button = BgButton(self, "Click here to change background")
 
         # Display game title:
         pygame.display.set_caption("Alien Invasion")
@@ -121,13 +124,14 @@ class AlienInvasion:
         """Respond to key-presses and mouse events."""
         # It's a Pygame method that watches
         # for keyboard and mouse events and store them as
-        # KEYDOWN events ready to be used.
+        # KEY-DOWN events ready to be used.
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
                 self._check_play_button(mouse_pos)
+                self._check_bg_button(mouse_pos)
             elif event.type == pygame.KEYDOWN:
                 # Start moving the ship to the right
                 self._check_keydown_events(event)
@@ -137,12 +141,20 @@ class AlienInvasion:
 # -----------------------------------------------------------------------------
 
 # Method to manage the backgrounds used in the game: --------------------------
-    def _background_choice(self):
+    def _check_bg_button(self, mouse_pos):
+        """Start a new game when the player clicks Play."""
+        button_clicked = self.bg_button.rect.collidepoint(mouse_pos)
+        self._background_choice(button_clicked)
+
+    def _background_choice(self, bg_input):
         """Calls the background image defined in the settings"""
-        if self.settings.bg_choice == 1:
-            self.background.blit_bg_1()
-        elif self.settings.bg_choice == 2:
-            self.background.blit_bg_2()
+        if bg_input and not self.stats.game_active:
+            if self.settings.bg_choice == 1:
+                self.background.blit_bg_2()
+                self.settings.bg_choice = 2
+            elif self.settings.bg_choice == 2:
+                self.background.blit_bg_1()
+                self.settings.bg_choice = 1
 
 # Group for manage bullets: ---------------------------------------------------
     def _fire_bullet(self):
@@ -275,8 +287,12 @@ class AlienInvasion:
         """Update images on the screen, and flip to the new screen."""
         # self.screen.fill(self.bg_color) (Disable option at the moment)
         # Redraw the screen during each pass through the loop: (Background + Ship image)
-        self._background_choice()
+        if self.settings.bg_choice == 1:
+            self.background.blit_bg_1()
+        elif self.settings.bg_choice == 2:
+            self.background.blit_bg_2()
         self.ship.blitme()
+
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
         self.aliens.draw(self.screen)
@@ -285,9 +301,10 @@ class AlienInvasion:
         # Store high score if the new high score is bigger
         # than the current one.
         self.stats.get_stored_high_score()
-        # Draw hte play button if the game is inactive.
+        # Draw the play and background button if the game is inactive.
         if not self.stats.game_active:
             self.play_button.draw_button()
+            self.bg_button.draw_bg_button()
         # Make the most recently drawn screen visible.
         pygame.display.flip()
 # -----------------------------------------------------------------------------
